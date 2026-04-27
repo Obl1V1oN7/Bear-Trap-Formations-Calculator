@@ -5,46 +5,105 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bear Trap Formations Calculator</title>
 <style>
-body { font-family: Arial; background:#0f172a; color:#e2e8f0; text-align:center; }
-.container { max-width:900px; margin:auto; padding:20px; }
-.card { background:#1e293b; padding:15px; border-radius:12px; margin:10px 0; }
-.row { display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
-label { width:220px; text-align:right; }
-input { padding:6px; margin:4px; width:140px; border-radius:6px; border:none; }
-button { padding:10px 15px; border:none; border-radius:8px; background:#38bdf8; cursor:pointer; }
-.result { margin-top:10px; }
-.formation { background:#334155; padding:10px; border-radius:10px; margin:8px 0; }
+body {
+    font-family: Arial;
+    background:#0f172a;
+    color:#e2e8f0;
+    text-align:center;
+    margin:0;
+}
+.container {
+    max-width:900px;
+    margin:auto;
+    padding:12px;
+}
+.card {
+    background:#1e293b;
+    padding:14px;
+    border-radius:12px;
+    margin:10px 0;
+}
+h1 { font-size:22px; }
+.row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:6px 0;
+}
+label {
+    flex:1;
+    text-align:left;
+    min-width:140px;
+}
+input {
+    padding:8px;
+    width:100%;
+    max-width:220px;
+    border-radius:8px;
+    border:none;
+}
+button {
+    padding:12px;
+    width:100%;
+    border:none;
+    border-radius:10px;
+    background:#38bdf8;
+    cursor:pointer;
+    font-weight:bold;
+}
+.formation {
+    background:#334155;
+    padding:10px;
+    border-radius:10px;
+    margin:8px 0;
+    text-align:left;
+}
+.switch {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+}
 .small { font-size:12px; opacity:0.7; }
-.switch { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; }
+@media (max-width:600px){
+    label { min-width:100%; text-align:left; }
+    input { max-width:100%; }
+}
 </style>
 </head>
 <body>
 <div class="container">
+
 <h1>🐻 Bear Trap Formations Calculator</h1>
 
 <div class="card">
 <h3>Settings</h3>
-<div class="row"><label>Troops limit:</label><input id="limit" type="number" value="120000"></div>
-<div class="row"><label>Formations count:</label><input id="formations" type="number" value="3"></div>
-<div class="row"><label>⚔️ Infantry available:</label><input id="infantry" type="number"></div>
-<div class="row"><label>🛡 Lancers available:</label><input id="spearmen" type="number"></div>
-<div class="row"><label>🏹 Marksmen available:</label><input id="archers" type="number"></div>
+
+<div class="row"><label>Troops limit ⚔️</label><input id="limit" type="number" value="120000"></div>
+<div class="row"><label>Formations count</label><input id="formations" type="number" value="3"></div>
+<div class="row"><label>⚔️ Infantry</label><input id="infantry" type="number"></div>
+<div class="row"><label>🛡 Lancers</label><input id="spearmen" type="number"></div>
+<div class="row"><label>🏹 Marksmen</label><input id="archers" type="number"></div>
 
 <div class="switch">
-<label>Equal distribution mode</label>
+<span>Equal distribution mode</span>
 <input type="checkbox" id="equalMode" checked>
 </div>
+<div class="small">ON: All units are distributed evenly across formations (Marksmen priority).<br>
+OFF: Each formation is filled to the limit with priority: 🏹 Marksmen → 🛡 Lancers → ⚔️ Infantry (min 5%).</div>
 
 <button onclick="calculate()">Calculate</button>
 </div>
 
-<div id="results" class="result"></div>
+<div id="results"></div>
 
 <div class="card">
-<h3>Manual formation (independent)</h3>
-<div class="row"><label>⚔️ Infantry:</label><input id="m_inf" type="number" value="0"></div>
-<div class="row"><label>🛡 Lancers:</label><input id="m_sp" type="number" value="0"></div>
-<div class="row"><label>🏹 Marksmen:</label><input id="m_ar" type="number" value="0"></div>
+<h3>Manual formation (no limit)</h3>
+<div class="row"><label>⚔️ Infantry</label><input id="m_inf" type="number" value="0"></div>
+<div class="row"><label>🛡 Lancers</label><input id="m_sp" type="number" value="0"></div>
+<div class="row"><label>🏹 Marksmen</label><input id="m_ar" type="number" value="0"></div>
 <button onclick="calculate()">Apply</button>
 <div id="manualResult" class="small"></div>
 </div>
@@ -52,96 +111,94 @@ button { padding:10px 15px; border:none; border-radius:8px; background:#38bdf8; 
 </div>
 
 <script>
-function calculate() {
+function calculate(){
     let limit = +document.getElementById('limit').value;
     let count = +document.getElementById('formations').value;
 
-    let inf = +document.getElementById('infantry').value;
-    let sp = +document.getElementById('spearmen').value;
-    let ar = +document.getElementById('archers').value;
+    let inf = +document.getElementById('infantry').value || 0;
+    let sp = +document.getElementById('spearmen').value || 0;
+    let ar = +document.getElementById('archers').value || 0;
 
-    let equalMode = document.getElementById('equalMode').checked;
+    let equal = document.getElementById('equalMode').checked;
 
-    let mInf = +document.getElementById('m_inf').value;
-    let mSp = +document.getElementById('m_sp').value;
-    let mAr = +document.getElementById('m_ar').value;
+    let mInf = +document.getElementById('m_inf').value || 0;
+    let mSp = +document.getElementById('m_sp').value || 0;
+    let mAr = +document.getElementById('m_ar').value || 0;
 
-    let manualSum = mInf + mSp + mAr;
-    let manualResult = document.getElementById('manualResult');
+    let res = document.getElementById('results');
+    res.innerHTML = '';
 
-    manualResult.innerHTML = '✅ Manual formation applied';
+    // subtract manual
+    inf -= mInf; sp -= mSp; ar -= mAr;
 
-    inf -= mInf;
-    sp -= mSp;
-    ar -= mAr;
-
-    if (inf < 0 || sp < 0 || ar < 0) {
-        manualResult.innerHTML = '❌ Not enough troops for manual formation';
-        return;
-    }
-
-    let resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '';
-
-    let manualDiv = document.createElement('div');
-    manualDiv.className = 'formation';
-    manualDiv.innerHTML = `<b>Manual formation</b><br>
+    res.innerHTML += `<div class="formation"><b>Manual formation</b><br>
     ⚔️ Infantry: ${mInf}<br>
     🛡 Lancers: ${mSp}<br>
-    🏹 Marksmen: ${mAr}`;
-    resultsDiv.appendChild(manualDiv);
+    🏹 Marksmen: ${mAr}</div>`;
 
     let minInf = limit * 0.05;
 
-    for (let i = 1; i <= count; i++) {
-        let archers, lancers, infantry;
+    for(let i=1;i<=count;i++){
+        let marksmen=0, lancers=0, infantry=0;
 
-        if (equalMode) {
-            let targetA = ar / (count - i + 1);
-            let targetS = sp / (count - i + 1);
+        if(equal){
+            let remaining = count - i + 1;
 
-            archers = Math.min(ar, targetA);
-            let arDef = targetA - archers;
+            // equal distribution with priority
+            marksmen = Math.min(ar / remaining, limit * 0.9);
 
-            lancers = Math.min(sp, targetS + arDef);
+            let space = limit - marksmen;
 
-            infantry = limit - archers - lancers;
+            lancers = Math.min(sp / remaining, space - minInf);
+            if(lancers < 0) lancers = 0;
 
-            // enforce minimum infantry
-            if (infantry < minInf) {
+            infantry = limit - marksmen - lancers;
+            if(infantry < minInf){
                 let deficit = minInf - infantry;
 
-                let takeFromLancers = Math.min(deficit, lancers - (limit * 0.05));
-                lancers -= takeFromLancers;
-                deficit -= takeFromLancers;
+                let take = Math.min(deficit, lancers);
+                lancers -= take;
+                deficit -= take;
 
-                archers -= Math.min(deficit, archers);
+                take = Math.min(deficit, marksmen);
+                marksmen -= take;
 
-                infantry = limit - archers - lancers;
+                infantry = minInf;
             }
-
         } else {
-            let targetA = ar / (count - i + 1);
-            let targetS = sp / (count - i + 1);
+            // strict priority: marksmen -> lancers -> infantry
+            marksmen = Math.min(ar, limit * 0.9);
 
-            archers = Math.min(ar, targetA);
-            lancers = Math.min(sp, targetS);
-            infantry = limit - archers - lancers;
+            let space = limit - marksmen;
 
-            if (infantry < minInf) infantry = minInf;
+            let maxLancers = space - minInf;
+            if(maxLancers < 0) maxLancers = 0;
+
+            lancers = Math.min(sp, maxLancers);
+
+            infantry = limit - marksmen - lancers;
+            if(infantry < minInf){
+                let deficit = minInf - infantry;
+
+                let take = Math.min(deficit, lancers);
+                lancers -= take;
+                deficit -= take;
+
+                take = Math.min(deficit, marksmen);
+                marksmen -= take;
+
+                infantry = minInf;
+            }
         }
 
-        ar -= archers;
+        ar -= marksmen;
         sp -= lancers;
         inf -= infantry;
 
-        let div = document.createElement('div');
-        div.className = 'formation';
-        div.innerHTML = `<b>Formation ${i}</b><br>
-        🏹 Marksmen: ${Math.round(archers)}<br>
+        res.innerHTML += `<div class="formation"><b>Formation ${i}</b><br>
+        🏹 Marksmen: ${Math.round(marksmen)}<br>
         🛡 Lancers: ${Math.round(lancers)}<br>
-        ⚔️ Infantry: ${Math.round(infantry)}`;
-        resultsDiv.appendChild(div);
+        ⚔️ Infantry: ${Math.round(infantry)}</div>`;
     }
 }
 </script>
